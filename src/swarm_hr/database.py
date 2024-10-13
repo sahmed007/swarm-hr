@@ -1,11 +1,11 @@
 import sqlite3
-import datetime
 from contextlib import contextmanager
 from .mock_data import (
     initial_candidates,
     initial_interviews,
     InterviewerRole,
     InterviewStage,
+    CandidateStatus,
 )
 
 DB_NAME = "hr_database.db"
@@ -46,10 +46,11 @@ def create_database():
         CREATE TABLE IF NOT EXISTS InterviewHistory (
             interview_id INTEGER PRIMARY KEY,
             candidate_id INTEGER,
-            date_of_interview DATE,
+            scheduled_time TIMESTAMP,
             interviewer TEXT,
             stage TEXT,
             notes TEXT,
+            status TEXT,
             FOREIGN KEY (candidate_id) REFERENCES Candidates(candidate_id)
         )
         """,
@@ -67,25 +68,39 @@ def add_candidate(name, email, phone, status):
 
 
 def add_interview(
-    candidate_id, interviewer: InterviewerRole, stage: InterviewStage, notes
+    candidate_id,
+    interviewer: InterviewerRole,
+    stage: InterviewStage,
+    notes,
+    scheduled_time=None,
+    status=None,
 ):
     query = """
-    INSERT INTO InterviewHistory (candidate_id, date_of_interview, interviewer, stage, notes)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO InterviewHistory (candidate_id, scheduled_time, interviewer, stage, notes, status)
+    VALUES (?, ?, ?, ?, ?, ?)
     """
-    date_of_interview = datetime.datetime.now()
     execute_query(
-        query, (candidate_id, date_of_interview, interviewer.name, stage.name, notes)
+        query,
+        (candidate_id, scheduled_time, interviewer.name, stage.name, notes, status),
     )
 
 
-def update_candidate_status(candidate_id, new_status):
+def update_candidate_status(candidate_id, new_status: CandidateStatus):
     query = """
     UPDATE Candidates
     SET status = ?
     WHERE candidate_id = ?
     """
-    execute_query(query, (new_status, candidate_id))
+    execute_query(query, (new_status.value, candidate_id))
+
+
+def update_interview_status(interview_id, new_status: CandidateStatus):
+    query = """
+    UPDATE InterviewHistory
+    SET status = ?
+    WHERE interview_id = ?
+    """
+    execute_query(query, (new_status.value, interview_id))
 
 
 def get_candidate_info(candidate_id):
@@ -94,6 +109,14 @@ def get_candidate_info(candidate_id):
     WHERE candidate_id = ?
     """
     return execute_query(query, (candidate_id,))
+
+
+def get_candidate_info_by_name(name):
+    query = """
+    SELECT * FROM Candidates
+    WHERE LOWER(name) LIKE LOWER(?)
+    """
+    return execute_query(query, (f"%{name}%",))
 
 
 def get_interview_history(candidate_id):
