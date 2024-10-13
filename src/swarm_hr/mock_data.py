@@ -16,20 +16,35 @@ initial_candidates = [
         "alice@example.com",
         "555-123-4567",
         CandidateStatus.OFFERED.value,
+        ["Python", "Java", "SQL", "Project Management"],
     ),
-    ("Bob Williams", "bob@example.com", "444-987-6543", CandidateStatus.REJECTED.value),
-    ("Emma Brown", "emma@example.com", "777-888-9999", CandidateStatus.APPLIED.value),
+    (
+        "Bob Williams",
+        "bob@example.com",
+        "444-987-6543",
+        CandidateStatus.REJECTED.value,
+        ["C++", "JavaScript", "React"],
+    ),
+    (
+        "Emma Brown",
+        "emma@example.com",
+        "777-888-9999",
+        CandidateStatus.APPLIED.value,
+        ["Ruby", "Rails", "PostgreSQL", "Docker"],
+    ),
     (
         "David Lee",
         "david@example.com",
         "222-333-4444",
         CandidateStatus.SHORTLISTED.value,
+        ["Python", "Django", "AWS", "Machine Learning"],
     ),
     (
         "Sarah Miller",
         "sarah@example.com",
         "666-555-4444",
         CandidateStatus.APPLIED.value,
+        ["JavaScript", "React", "Node.js", "MongoDB"],
     ),
 ]
 

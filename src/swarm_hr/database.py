@@ -1,4 +1,5 @@
 import sqlite3
+import json
 from contextlib import contextmanager
 from .mock_data import (
     initial_candidates,
@@ -39,7 +40,8 @@ def create_database():
             name TEXT,
             email TEXT,
             phone TEXT,
-            status TEXT
+            status TEXT,
+            skills TEXT
         )
         """,
         """
@@ -59,12 +61,13 @@ def create_database():
         execute_query(query)
 
 
-def add_candidate(name, email, phone, status):
+def add_candidate(name, email, phone, status, skills):
     query = """
-    INSERT INTO Candidates (name, email, phone, status)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO Candidates (name, email, phone, status, skills)
+    VALUES (?, ?, ?, ?, ?)
     """
-    execute_query(query, (name, email, phone, status))
+    skills_json = json.dumps(skills)
+    execute_query(query, (name, email, phone, status, skills_json))
 
 
 def add_interview(
@@ -108,7 +111,12 @@ def get_candidate_info(candidate_id):
     SELECT * FROM Candidates
     WHERE candidate_id = ?
     """
-    return execute_query(query, (candidate_id,))
+    result = execute_query(query, (candidate_id,))
+    if result:
+        candidate = list(result[0])
+        candidate[5] = json.loads(candidate[5])
+        return tuple(candidate)
+    return None
 
 
 def get_candidate_info_by_name(name):
@@ -116,7 +124,13 @@ def get_candidate_info_by_name(name):
     SELECT * FROM Candidates
     WHERE LOWER(name) LIKE LOWER(?)
     """
-    return execute_query(query, (f"%{name}%",))
+    results = execute_query(query, (f"%{name}%",))
+    parsed_results = []
+    for result in results:
+        candidate = list(result)
+        candidate[5] = json.loads(candidate[5])
+        parsed_results.append(tuple(candidate))
+    return parsed_results
 
 
 def get_interview_history(candidate_id):
