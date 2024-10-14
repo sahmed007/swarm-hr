@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from swarm import Swarm, Agent
 from swarm.repl import run_demo_loop
-from swarm_hr import database
+from swarm_hr import database, actions
 
 load_dotenv()
 
@@ -22,6 +22,7 @@ database.preview_table("Candidates")
 database.preview_table("InterviewHistory")
 
 # Define the agents for each stage of the HR process
+
 recruiter = Agent(
     name="Recruiter",
     description=f"""
@@ -29,23 +30,19 @@ recruiter = Agent(
     You must ask for both the candidate's name and the primary skill they are being screened for. 
     Ask for both name and skill in one message.
     """,
-    functions=[
-        database.add_candidate,
-        database.add_interview,
-        database.update_candidate_status,
-    ],
+    functions=[actions.screen_candidate],
 )
 
 interviewer = Agent(
     name="Interviewer",
     description=f"""
     You are an in-depth interviewer that handles all actions related to interviewing after a user makes a request.
-    You must ask which type of interview is needed, and then ask for the candidate's name.
-    The two types of interview choices are technical and behavioral.
-    If the interview type is technical, you must ask for two of the primary skills being screened for.
-    If the interview type is behavioral, you must ask for a suitable time for the interview.
+    You must ask for the candidate's name along with the job position they are applying for.
+    Ask for both name and skill in one message.
+    Then you must execute the 'assess_candidate_for_job' function to determine if the candidate is a good fit for the job.
+    After the assessment, you must execute the 'mark_candidate_as_interviewed' function to mark the candidate as interviewed.
     """,
-    functions=[database.add_interview, database.update_candidate_status],
+    functions=[actions.assess_candidate_for_job, actions.mark_candidate_as_interviewed],
 )
 
 hiring_manager = Agent(
@@ -58,16 +55,16 @@ hiring_manager = Agent(
 )
 
 # Create a routing agent
-triage_agent = Agent(
+hr_coordinator = Agent(
     name="HR Coordinator",
     instructions=f"""
-    You are to triage a users request who acts as the hiring manager, and call a tool to transfer to the right intent.
+    You are to triage a users request and call a tool to transfer to the right intent.
     Once you are ready to transfer to the right intent, call the tool to transfer to the right intent.  
     You dont need to know specifics, just the topic of the request.
 
-    If the user request is about adding a new candidate or performing an initial screening, transfer to the Recruiter.
-    If the user request is about adding a new technical interview or behavioral interview, transfer to the Interviewer.
-    If the user request is about obtaining a final decision on a candidate or a shortlist, transfer to the Hiring Manager.
+    If the user request is about performing an initial screening, transfer to the Recruiter.
+    If the user request is about interviewing a candidate, transfer to the Interviewer.
+    If the user request is about obtaining a shortlist, transfer to the Hiring Manager.
 
     When you need more information to triage the request to an agent, ask a direct question without explaining why you're asking it.
     Do not share your thought process with the user! Do not make unreasonable assumptions on behalf of user.
@@ -76,6 +73,33 @@ triage_agent = Agent(
     add_backlinks=True,
 )
 
+
+def transfer_to_recruiter():
+    return recruiter
+
+
+def transfer_to_interviewer():
+    return interviewer
+
+
+def transfer_to_hiring_manager():
+    return hiring_manager
+
+
+def transfer_to_hr_coordinator():
+    """Call this function if a user is asking about a topic that is not handled by the current agent."""
+    return hr_coordinator
+
+
+hr_coordinator.functions = [
+    transfer_to_recruiter,
+    transfer_to_interviewer,
+    transfer_to_hiring_manager,
+]
+recruiter.functions.append(transfer_to_hr_coordinator)
+interviewer.functions.append(transfer_to_hr_coordinator)
+# hiring_manager.functions.append(transfer_to_hr_coordinator)
+
 if __name__ == "__main__":
     # Run the demo loop
-    run_demo_loop(triage_agent, debug=False)
+    run_demo_loop(hr_coordinator, debug=False)

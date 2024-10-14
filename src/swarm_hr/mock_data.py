@@ -1,14 +1,10 @@
 from datetime import datetime, timedelta
-from swarm_hr.utils import InterviewerRole, InterviewStage
-from enum import Enum
-
-
-class CandidateStatus(Enum):
-    APPLIED = "Applied"
-    SHORTLISTED = "Shortlisted"
-    REJECTED = "Rejected"
-    OFFERED = "Offered"
-
+from swarm_hr.utils import (
+    InterviewerRole,
+    CandidateStatus,
+    INTERVIEWED,
+    NOT_INTERVIEWED,
+)
 
 initial_candidates = [
     (
@@ -54,7 +50,7 @@ initial_interviews = [
     (
         1,
         InterviewerRole.RECRUITER,
-        InterviewStage.INITIAL_SCREENING,
+        INTERVIEWED,
         "Good communication skills",
         now - timedelta(days=7),
         CandidateStatus.SHORTLISTED.value,
@@ -62,7 +58,7 @@ initial_interviews = [
     (
         1,
         InterviewerRole.INTERVIEWER,
-        InterviewStage.TECHNICAL_INTERVIEW,
+        INTERVIEWED,
         "Strong technical background",
         now - timedelta(days=3),
         CandidateStatus.SHORTLISTED.value,
@@ -70,7 +66,7 @@ initial_interviews = [
     (
         1,
         InterviewerRole.HIRING_MANAGER,
-        InterviewStage.FINAL_INTERVIEW,
+        INTERVIEWED,
         "Great cultural fit",
         now - timedelta(days=1),
         CandidateStatus.OFFERED.value,
@@ -78,7 +74,7 @@ initial_interviews = [
     (
         2,
         InterviewerRole.RECRUITER,
-        InterviewStage.INITIAL_SCREENING,
+        INTERVIEWED,
         "Lack of relevant experience",
         now - timedelta(days=5),
         CandidateStatus.REJECTED.value,
@@ -86,7 +82,7 @@ initial_interviews = [
     (
         3,
         InterviewerRole.RECRUITER,
-        InterviewStage.INITIAL_SCREENING,
+        NOT_INTERVIEWED,
         "Impressive experience",
         now + timedelta(days=1),
         CandidateStatus.APPLIED.value,
@@ -94,7 +90,7 @@ initial_interviews = [
     (
         4,
         InterviewerRole.RECRUITER,
-        InterviewStage.INITIAL_SCREENING,
+        INTERVIEWED,
         "Good potential",
         now - timedelta(days=2),
         CandidateStatus.SHORTLISTED.value,
@@ -102,7 +98,7 @@ initial_interviews = [
     (
         4,
         InterviewerRole.INTERVIEWER,
-        InterviewStage.TECHNICAL_INTERVIEW,
+        NOT_INTERVIEWED,
         "Solid technical skills",
         now + timedelta(days=2),
         CandidateStatus.SHORTLISTED.value,
@@ -110,7 +106,7 @@ initial_interviews = [
     (
         5,
         InterviewerRole.RECRUITER,
-        InterviewStage.INITIAL_SCREENING,
+        NOT_INTERVIEWED,
         "Interesting background",
         now + timedelta(days=3),
         CandidateStatus.APPLIED.value,

@@ -5,7 +5,6 @@ from .mock_data import (
     initial_candidates,
     initial_interviews,
     InterviewerRole,
-    InterviewStage,
     CandidateStatus,
 )
 
@@ -53,6 +52,7 @@ def create_database():
             stage TEXT,
             notes TEXT,
             status TEXT,
+            interviewed BOOLEAN,
             FOREIGN KEY (candidate_id) REFERENCES Candidates(candidate_id)
         )
         """,
@@ -73,18 +73,18 @@ def add_candidate(name, email, phone, status, skills):
 def add_interview(
     candidate_id,
     interviewer: InterviewerRole,
-    stage: InterviewStage,
+    interviewed: bool,
     notes,
     scheduled_time=None,
     status=None,
 ):
     query = """
-    INSERT INTO InterviewHistory (candidate_id, scheduled_time, interviewer, stage, notes, status)
+    INSERT INTO InterviewHistory (candidate_id, scheduled_time, interviewer, interviewed, notes, status)
     VALUES (?, ?, ?, ?, ?, ?)
     """
     execute_query(
         query,
-        (candidate_id, scheduled_time, interviewer.name, stage.name, notes, status),
+        (candidate_id, scheduled_time, interviewer.name, interviewed, notes, status),
     )
 
 

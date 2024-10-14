@@ -7,14 +7,12 @@ class InterviewerRole(Enum):
     HIRING_MANAGER = auto()
 
 
-class InterviewStage(Enum):
-    INITIAL_SCREENING = auto()
-    TECHNICAL_INTERVIEW = auto()
-    FINAL_INTERVIEW = auto()
-
-
 class CandidateStatus(Enum):
     APPLIED = "Applied"
     SHORTLISTED = "Shortlisted"
     REJECTED = "Rejected"
     OFFERED = "Offered"
+
+
+INTERVIEWED = True
+NOT_INTERVIEWED = False
