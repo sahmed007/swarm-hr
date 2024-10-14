@@ -51,10 +51,10 @@ def mark_candidate_as_interviewed(
         query,
         (
             candidate_id,
-            InterviewerRole.INTERVIEWER,
+            InterviewerRole.INTERVIEWER.value,
             INTERVIEWED,
             notes,
-            CandidateStatus.APPLIED,
+            CandidateStatus.APPLIED.value,
         ),
     )
 
@@ -82,3 +82,17 @@ def assess_candidate_for_job(candidate_name: str, job_position: str) -> bool:
     is_good_fit = assess_candidate_fit(candidate_skills, job_position)
 
     return is_good_fit
+
+
+def get_shortlist() -> list[str]:
+    """
+    Get a shortlist of candidates from the Candidates table.
+    """
+    query = """
+    SELECT name FROM Candidates
+    WHERE LOWER(status) = LOWER(?)
+    """
+    results = execute_query(query, (CandidateStatus.SHORTLISTED.value,))
+    candidates = [result[0] for result in results]
+
+    return candidates

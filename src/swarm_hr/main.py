@@ -17,9 +17,8 @@ client = Swarm(client=openai_client)
 # Initialize the database
 database.initialize_database()
 
-# Preview tables
+# Preview Candidates table
 database.preview_table("Candidates")
-database.preview_table("InterviewHistory")
 
 # Define the agents for each stage of the HR process
 
@@ -51,7 +50,7 @@ hiring_manager = Agent(
     You are the hiring manager that handles all actions related to making a shortlist of candidates after a user makes a request.
     You must provide a shortlist of candidates to the user.
     """,
-    functions=[database.add_interview, database.update_candidate_status],
+    functions=[actions.get_shortlist],
 )
 
 # Create a routing agent
@@ -91,14 +90,15 @@ def transfer_to_hr_coordinator():
     return hr_coordinator
 
 
+recruiter.functions.append(transfer_to_hr_coordinator)
+interviewer.functions.append(transfer_to_hr_coordinator)
+hiring_manager.functions.append(transfer_to_hr_coordinator)
+
 hr_coordinator.functions = [
     transfer_to_recruiter,
     transfer_to_interviewer,
     transfer_to_hiring_manager,
 ]
-recruiter.functions.append(transfer_to_hr_coordinator)
-interviewer.functions.append(transfer_to_hr_coordinator)
-# hiring_manager.functions.append(transfer_to_hr_coordinator)
 
 if __name__ == "__main__":
     # Run the demo loop
